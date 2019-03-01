@@ -247,8 +247,8 @@ class Multiple(object):
         self.iterations = iterations
         self.p2 = p2
         self.dimensions = dimensions
-        self.p1 = np.arange(0.0,1,0.05)
-        self.p3 = np.arange(0.0,1,0.05)
+        self.p1 = np.arange(0.0,1,0.2)
+        self.p3 = np.arange(0.0,1,0.2)
         self.infecFrac = np.zeros((len(self.p3),len(self.p1)))
         self.variance = np.zeros((len(self.p3),len(self.p1)))
         self.current = 0
@@ -273,7 +273,7 @@ class Multiple(object):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.variance, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        plt.savefig('variance.png')
+        #plt.savefig('variancetest.png')
         plt.show()
 
 class ReadFromFile(object):
@@ -291,7 +291,7 @@ class ReadFromFile(object):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        plt.savefig('test.png')
+        #plt.savefig('test.png')
         plt.show()
 
 
@@ -302,7 +302,7 @@ class ReadFromFile(object):
 #A.updateNoAnim()
 #A.plotInfFrac()
 
-#A = Multiple(100,10,1000)
+#A = Multiple(100,10,500)
 #A.runM()
 #A.getPlot()
 
