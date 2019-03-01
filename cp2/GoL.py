@@ -145,11 +145,15 @@ class GameOfLife(object):
 
 class SIRS(object):
 
-    def __init__(self, dimensions, p1, p2, p3):
+    def __init__(self, dimensions, p1, p2, p3, equilibration, sampleStep, iterations):
+        self.iterations = iterations
         self.dimensions = dimensions
+        self.equilibration = equilibration
+        self.sampleStep = sampleStep
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
+        self.infectedFraction = np.array(())
         self.state = np.zeros((self.dimensions,self.dimensions)).astype(int)
         self.setRandomState()
 
@@ -176,31 +180,101 @@ class SIRS(object):
             return True
         return False
 
+
+
+    def updateNoAnim(self):
+        for i in range(self.iterations):
+            for sweep in range(self.dimensions*self.dimensions):
+                index = np.random.randint(0,self.dimensions,2)
+                randomNr = np.random.uniform(0,1)
+                if self.state[index[0],index[1]]==1 and randomNr<=self.p1:
+                    if self.getInfectedNeighbours(index[0],index[1])==True:
+                        self.state[index[0],index[1]] = 0
+                        continue
+                elif self.state[index[0],index[1]]==0 and randomNr<=self.p2:
+                    self.state[index[0],index[1]] = -1
+                    continue
+                elif self.state[index[0],index[1]]==-1 and randomNr<=self.p3:
+                    self.state[index[0],index[1]] = 1
+            if i ==self.equilibration or (i>self.equilibration and i%self.sampleStep==0):
+                    self.infectedFraction = np.append(self.infectedFraction, self.getInfFrac())
+
+
     def update(self,i):
         for sweep in range(self.dimensions*self.dimensions):
             index = np.random.randint(0,self.dimensions,2)
             randomNr = np.random.uniform(0,1)
-            if self.state[index[0],index[1]]==1 and randomNr>=self.p1:
+            if self.state[index[0],index[1]]==1 and randomNr<=self.p1:
                 if self.getInfectedNeighbours(index[0],index[1])==True:
                     self.state[index[0],index[1]] = 0
                     continue
             elif self.state[index[0],index[1]]==0 and randomNr<=self.p2:
                 self.state[index[0],index[1]] = -1
                 continue
-            elif self.state[index[0],index[1]]==-1 and randomNr<=self.p2:
+            elif self.state[index[0],index[1]]==-1 and randomNr<=self.p3:
                 self.state[index[0],index[1]] = 1
                 continue
-        self.im = plt.imshow(self.state, interpolation='nearest')
+        self.im = plt.imshow(self.state, interpolation='nearest', cmap = 'brg')
         return [self.im]
 
     def run(self):
         fig, ax = plt.subplots()
-        self.im=plt.imshow(self.state, interpolation='nearest')
-        anim = FuncAnimation(fig, self.update, frames = 10000, repeat = False, interval = 1, blit = True)
+        self.im=plt.imshow(self.state, interpolation='nearest', cmap = 'brg')
+        anim = FuncAnimation(fig, self.update, frames = self.iterations, repeat = False, interval = 1, blit = True)
         plt.show()
 
 
+    def getInfFrac(self):
+        infSum = 0
+        for i in range(self.dimensions):
+            for j in range(self.dimensions):
+                if self.state[i,j] == 0:
+                    infSum += 1
+        return float(infSum)/float(self.dimensions*self.dimensions)
+
+
+    def plotInfFrac(self):
+        x = np.arange(self.equilibration,self.iterations,self.sampleStep)
+        plt.plot(x,self.infectedFraction)
+        plt.show()
+
+
+class Multiple(object):
+
+    def __init__(self, equilibration, sampleStep, iterations, p2 = 0.5, dimensions = 50):
+        self.equilibration = equilibration
+        self.sampleStep = sampleStep
+        self.iterations = iterations
+        self.p2 = p2
+        self.dimensions = dimensions
+        self.p1 = np.arange(0.0,1,0.2)
+        self.p3 = np.arange(0.0,1,0.2)
+        self.infecFrac = np.zeros((len(self.p3),len(self.p1)))
+
+    def runM(self):
+        for i in range(len(self.p1)):
+            for j in range(len(self.p3)):
+                A = SIRS(self.dimensions, self.p1[i],self.p2,self.p3[j],self.equilibration,self.sampleStep,self.iterations)
+                A.updateNoAnim()
+                self.infecFrac[j,i] = np.mean(A.infectedFraction)
+                print('ok')
+
+    def getPlot(self):
+        fig, ax = plt.subplots()
+        self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
+        plt.colorbar()
+        plt.savefig('lowres.png')
+        plt.show()
+
+
+
 #A = GameOfLife()
-A = SIRS(50, 0.8,0.7,0.2)
-A.run()
-#print(A.getAvrgSpeed())
+
+#A = SIRS(50, 0.0,0.5,0.0, 100,10,1000)
+#A.run()
+#A.updateNoAnim()
+#A.plotInfFrac()
+
+A = Multiple(100,10,500)
+A.runM()
+A.getPlot()
