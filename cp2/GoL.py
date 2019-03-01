@@ -247,9 +247,12 @@ class Multiple(object):
         self.iterations = iterations
         self.p2 = p2
         self.dimensions = dimensions
-        self.p1 = np.arange(0.0,1,0.2)
-        self.p3 = np.arange(0.0,1,0.2)
+        self.p1 = np.arange(0.0,1,0.05)
+        self.p3 = np.arange(0.0,1,0.05)
         self.infecFrac = np.zeros((len(self.p3),len(self.p1)))
+        self.variance = np.zeros((len(self.p3),len(self.p1)))
+        self.current = 0
+        self.total = len(self.p1)*len(self.p3)
 
     def runM(self):
         for i in range(len(self.p1)):
@@ -257,24 +260,50 @@ class Multiple(object):
                 A = SIRS(self.dimensions, self.p1[i],self.p2,self.p3[j],self.equilibration,self.sampleStep,self.iterations)
                 A.updateNoAnim()
                 self.infecFrac[j,i] = np.mean(A.infectedFraction)
-                print('ok')
+                self.variance[j,i] = (np.mean(np.square(A.infectedFraction))-np.square(np.mean(A.infectedFraction)))/np.power(self.dimensions,2)
+                print(str(self.current) + "/" + str(self.total))
+                self.current +=1
 
     def getPlot(self):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        plt.savefig('lowres.png')
+        plt.savefig('infectedFraction.png')
+        plt.show()
+        fig, ax = plt.subplots()
+        self.im=plt.imshow(self.variance, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
+        plt.colorbar()
+        plt.savefig('variance.png')
         plt.show()
 
+class ReadFromFile(object):
+
+    def __init__(self):
+        filename = raw_input("text file: ")
+        new = []
+        with open(filename, 'r') as f:
+            for line in f:
+                test = line.split(' ')
+                new.append(test)
+        for i in new:
+            del(i[-1])
+        self.infecFrac = np.array(new).astype(float)
+        fig, ax = plt.subplots()
+        self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
+        plt.colorbar()
+        plt.savefig('test.png')
+        plt.show()
 
 
 #A = GameOfLife()
 
-#A = SIRS(50, 0.0,0.5,0.0, 100,10,1000)
+#A = SIRS(100, 0.7,0.5,0.07, 100,10,10000)
 #A.run()
 #A.updateNoAnim()
 #A.plotInfFrac()
 
-A = Multiple(100,10,500)
-A.runM()
-A.getPlot()
+#A = Multiple(100,10,1000)
+#A.runM()
+#A.getPlot()
+
+A=ReadFromFile()
