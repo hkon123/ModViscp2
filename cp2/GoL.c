@@ -18,23 +18,18 @@ int main(void){
   current = 0;
   total = dimensions*dimensions;
   float results[20][20] = {{0}};
-  float variance[20][20] = {{0}};
-  float output[2];
-
 
   for(i=0 ; i<dimensions ; i++){
     p3 = 0;
     for(j=0 ; j<dimensions ; j++){
-      output[2] = sirs(p1,p3);
-      results[i][j] = output[0];
-      variance[i][j] = output[1];
+      results[i][j] = sirs(p1,p3);
       printf("%d/%d\n", current,total);
       p3 = p3 + increment;
       current++;
     }
     p1 = p1 + increment;
   }
-  FILE *f = fopen("avrgFraction.txt", "w");
+  FILE *f = fopen("testing.txt", "w");
   for(i=0 ; i<dimensions ; i++){
     for(j=0 ; j<dimensions ; j++){
       fprintf(f,"%f ",results[i][j]);
@@ -42,14 +37,7 @@ int main(void){
     fprintf(f,"\n");
   }
   fclose(f);
-  FILE *g = fopen("variance.txt", "w");
-  for(i=0 ; i<dimensions ; i++){
-    for(j=0 ; j<dimensions ; j++){
-      fprintf(g,"%f ",variance[i][j]);
-    }
-    fprintf(g,"\n");
-  }
-  fclose(g);
+
 
   return 0;
 }
@@ -58,7 +46,7 @@ int main(void){
 float sirs(float p1, float p3){
 
   int iterations, dimensions, equilibration, sampleStep, i, j, check, count, test, count2;
-  float p2,fract, fractAvrg, squareFractAverage, variance;
+  float p2,fract, fractAvrg;
   iterations = 1000;
   dimensions = 50;
   equilibration = 100;
@@ -67,7 +55,6 @@ float sirs(float p1, float p3){
   count = 0;
   count2 = 0;
   fractAvrg = 0;
-  squareFractAverage = 0;
 
   float infectedFraction[(iterations-equilibration)/sampleStep];
   int state[50][50] = {{0}};
@@ -119,14 +106,11 @@ float sirs(float p1, float p3){
 
   for(i=0 ; i<(iterations-equilibration)/sampleStep ; i++){
     fractAvrg = fractAvrg + infectedFraction[i];
-    squareFractAverage = squareFractAverage + infectedFraction[i]*infectedFraction[i];
     count2++;
   }
   fractAvrg = fractAvrg/count2;
-  squareFractAverage = squareFractAverage/count2;
-  variance = squareFractAverage - fractAvrg*fractAvrg;
-  float result[2] = {fractAvrg,squareFractAverage};
-  return *result;
+
+  return fractAvrg;
 }
 
 int infNeigh(int state[50][50], int index1, int index2){
