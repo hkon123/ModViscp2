@@ -143,13 +143,64 @@ class GameOfLife(object):
 
 
 
+class SIRS(object):
+
+    def __init__(self, dimensions, p1, p2, p3):
+        self.dimensions = dimensions
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+        self.state = np.zeros((self.dimensions,self.dimensions)).astype(int)
+        self.setRandomState()
+
+    def setRandomState(self):
+        for i in range(0,self.dimensions):
+            for j in range(self.dimensions):
+                rand = np.random.uniform(0,1)
+                if rand<=0.33:
+                    self.state[i,j] = 1         #S
+                elif rand>0.33 and rand<=0.66:
+                    self.state[i,j] = 0         #I
+                else:
+                    self.state[i,j] = -1        #R
 
 
+    def getInfectedNeighbours(self,index1,index2):
+        if self.state[(index1-1)%self.dimensions,index2] == 0:
+            return True
+        if self.state[index1,(index2+1)%self.dimensions] == 0:
+            return True
+        if self.state[(index1+1)%self.dimensions,index2] == 0:
+            return True
+        if self.state[index1,(index2-1)%self.dimensions] == 0 :
+            return True
+        return False
+
+    def update(self,i):
+        for sweep in range(self.dimensions*self.dimensions):
+            index = np.random.randint(0,self.dimensions,2)
+            randomNr = np.random.uniform(0,1)
+            if self.state[index[0],index[1]]==1 and randomNr>=self.p1:
+                if self.getInfectedNeighbours(index[0],index[1])==True:
+                    self.state[index[0],index[1]] = 0
+                    continue
+            elif self.state[index[0],index[1]]==0 and randomNr<=self.p2:
+                self.state[index[0],index[1]] = -1
+                continue
+            elif self.state[index[0],index[1]]==-1 and randomNr<=self.p2:
+                self.state[index[0],index[1]] = 1
+                continue
+        self.im = plt.imshow(self.state, interpolation='nearest')
+        return [self.im]
+
+    def run(self):
+        fig, ax = plt.subplots()
+        self.im=plt.imshow(self.state, interpolation='nearest')
+        anim = FuncAnimation(fig, self.update, frames = 10000, repeat = False, interval = 1, blit = True)
+        plt.show()
 
 
-
-
-
-A = GameOfLife()
+#A = GameOfLife()
+A = SIRS(50, 0.8,0.7,0.2)
 A.run()
-print(A.getAvrgSpeed())
+#print(A.getAvrgSpeed())
