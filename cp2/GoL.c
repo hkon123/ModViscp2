@@ -118,7 +118,7 @@ float sirsV(float p1, float p3){
 
   int iterations, dimensions, equilibration, sampleStep, i, j, check, count, test, count2;
   float p2,fract, fractAvrg, squareFractAverage, variance;
-  iterations = 10000;
+  iterations = 1000;
   dimensions = 50;
   equilibration = 100;
   sampleStep = 10;
@@ -126,6 +126,7 @@ float sirsV(float p1, float p3){
   count = 0;
   count2 = 0;
   fractAvrg = 0;
+  squareFractAverage =0;
 
   float infectedFraction[(iterations-equilibration)/sampleStep];
   int state[50][50] = {{0}};
