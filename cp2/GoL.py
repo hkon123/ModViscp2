@@ -320,7 +320,7 @@ class ReadFromFile(object):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        plt.savefig('50by50fraction(10000sweeps).png')
+        plt.savefig('contour.png')
         plt.show()
 
     def Graph(self):
