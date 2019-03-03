@@ -145,17 +145,23 @@ class GameOfLife(object):
 
 class SIRS(object):
 
-    def __init__(self, dimensions, p1, p2, p3, equilibration, sampleStep, iterations):
+    def __init__(self, dimensions, p1, p2, p3, equilibration, sampleStep, iterations, immuneFraction = 0):
+        self.immuneFraction = immuneFraction
+        self.immune = 0
         self.iterations = iterations
         self.dimensions = dimensions
         self.equilibration = equilibration
         self.sampleStep = sampleStep
+        self.maxImmune = np.power(dimensions, 2)*self.immuneFraction
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
         self.infectedFraction = np.array(())
         self.state = np.zeros((self.dimensions,self.dimensions)).astype(int)
-        self.setRandomState()
+        if self.immuneFraction == 0:
+            self.setRandomState()
+        else:
+            self.setRandomStateWithImmune()
 
     def setRandomState(self):
         for i in range(0,self.dimensions):
@@ -167,6 +173,27 @@ class SIRS(object):
                     self.state[i,j] = 0         #I
                 else:
                     self.state[i,j] = -1        #R
+
+    def setRandomStateWithImmune(self):
+        for i in range(0,self.dimensions):
+            for j in range(self.dimensions):
+                rand = np.random.uniform(0,1)
+                if rand<=0.33:
+                    self.state[i,j] = 1         #S
+                elif rand>0.33 and rand<=0.66:
+                    self.state[i,j] = 0         #I
+                else:
+                    self.state[i,j] = -1        #R
+        while self.immune<self.maxImmune:
+            for i in range(0,self.dimensions):
+                for j in range(self.dimensions):
+                    if self.state[i,j]!=-2:
+                        rand = np.random.uniform(0,1)
+                        self.immuneProb = 0.5-float(self.immune)/float(2*self.maxImmune)
+                        if rand<=self.immuneProb:
+                            self.state[i,j] = -2      #Immune
+                            self.immune+=1
+                            continue
 
 
     def getInfectedNeighbours(self,index1,index2):
@@ -213,6 +240,8 @@ class SIRS(object):
                 continue
             elif self.state[index[0],index[1]]==-1 and randomNr<=self.p3:
                 self.state[index[0],index[1]] = 1
+                continue
+            elif self.state[index[0],index[1]]==2:
                 continue
         self.im = plt.imshow(self.state, interpolation='nearest', cmap = 'brg')
         return [self.im]
@@ -278,7 +307,7 @@ class Multiple(object):
 
 class ReadFromFile(object):
 
-    def __init__(self):
+    def Cmap(self):
         filename = raw_input("text file: ")
         new = []
         with open(filename, 'r') as f:
@@ -291,13 +320,40 @@ class ReadFromFile(object):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        plt.savefig('variance.png')
+        plt.savefig('50by50fraction(10000sweeps).png')
         plt.show()
 
+    def Graph(self):
+        filename = raw_input("Plot file: ")
+        new = []
+        with open(filename, 'r') as f:
+            for line in f:
+                test = line.split(' ')
+                new.append(test)
+        #del(new[0,-1])
+        infecFrac = np.array(new)
+        infecFrac = np.delete(infecFrac,-1)
+        infecFrac = infecFrac.astype(float)
+        filename = raw_input("Error file: ")
+        new = []
+        with open(filename, 'r') as f:
+            for line in f:
+                test = line.split(' ')
+                new.append(test)
+        #del(new[0,-1])
+        variance = np.array(new)
+        variance = np.delete(variance,-1)
+        variance = variance.astype(float)
+        x = np.arange(0,1,0.01)
+        plt.plot(x,infecFrac)
+        plt.errorbar(x, infecFrac, yerr = variance)
+        #plt.savefig("plot.png")
+        plt.show()
 
 #A = GameOfLife()
 
-#A = SIRS(100, 0.7,0.5,0.07, 100,10,10000)
+#A = SIRS(50, 0.5,0.5,0.5, 100,10,10000, immuneFraction =0.25)
+#print(A.immune)
 #A.run()
 #A.updateNoAnim()
 #A.plotInfFrac()
@@ -306,4 +362,4 @@ class ReadFromFile(object):
 #A.runM()
 #A.getPlot()
 
-A=ReadFromFile()
+A=ReadFromFile().Graph()
