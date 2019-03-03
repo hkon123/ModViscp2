@@ -1,4 +1,4 @@
-Run im.exe for full functionality of recompile GoL.c
+Run im.exe for full functionality or recompile GoL.c
 
 it can be run with multiple flags:
 no flags runs a countour plot with dimensions 20x20 for 1000 sweeps
