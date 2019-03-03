@@ -361,5 +361,7 @@ class ReadFromFile(object):
 #A = Multiple(100,10,500)
 #A.runM()
 #A.getPlot()
-
-A=ReadFromFile().Graph()
+if int(raw_input("countour(0) or graph plot(1)?"))==1:
+    A=ReadFromFile().Graph()
+else:
+    A=ReadFromFile().Cmap()
