@@ -291,7 +291,7 @@ class ReadFromFile(object):
         fig, ax = plt.subplots()
         self.im=plt.imshow(self.infecFrac, interpolation='nearest', cmap = 'inferno', extent = [0.0,1.0,0.0,1.0], origin = 'lower')
         plt.colorbar()
-        #plt.savefig('test.png')
+        plt.savefig('variance.png')
         plt.show()
 
 
