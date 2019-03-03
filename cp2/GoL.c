@@ -8,7 +8,7 @@
 int infNeigh(int state[50][50], int index1, int index2);
 float getInfFrac(int state[50][50]);
 int printState(int state[50][50]);
-float sirs(float p1, float p3, int sweeps);
+float sirs(float p1, float p3, int sweeps, float immuneFraction);
 
 int main(int argc, char **argv){
 
@@ -19,14 +19,14 @@ int main(int argc, char **argv){
 
   int dimflag = 20;
   int sweepflag = 1000;
-  int sflag = 0;
+  int immuneFlag = 0;
   int index;
   int c;
 
 
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "blsc")) != -1)
+  while ((c = getopt (argc, argv, "blsci")) != -1)
    switch (c)
      {
      case 'b':
@@ -37,6 +37,9 @@ int main(int argc, char **argv){
       break;
      case 's':
       dimflag = 10;
+      break;
+    case 'i':
+      immuneFlag = 1;
       break;
      case 'c':
       printf("Dimensions of countour:");
@@ -60,40 +63,50 @@ int main(int argc, char **argv){
       printf ("Non-option argument %s\n", argv[index]);
 
   int i,j,dimensions, current, total;
-  float p1,p3,increment;
+  float p1,p3,increment,immuneFraction;
   p1 = 0;
   p3 = 0;
   dimensions = dimflag;
   increment = 1.0/dimensions;
   current = 0;
   total = dimensions*dimensions;
+  immuneFraction = 0;
   float results = 0;
 
-  for(i=0 ; i<dimensions ; i++){
-    p3 = 0;
-    for(j=0 ; j<dimensions ; j++){
-      results = sirs(p1,p3, sweepflag);
-      printf("%d/%d\n", current,total);
-      p3 = p3 + increment;
+  if(immuneFlag==0){
+    for(i=0 ; i<dimensions ; i++){
+      p3 = 0;
+      for(j=0 ; j<dimensions ; j++){
+        results = sirs(p1,p3, sweepflag,0);
+        printf("%d/%d\n", current,total);
+        p3 = p3 + increment;
+        current++;
+      }
+      p1 = p1 + increment;
+      FILE *f = fopen("newFraction.txt", "a+");
+      fprintf(f,"\n");
+      fclose(f);
+
+      FILE *v = fopen("newVariance.txt", "a+");
+      fprintf(v,"\n");
+      fclose(v);
+    }
+  }
+  else{
+    for(i=0 ; i<100 ; i++){
+      results = sirs(0.5,0.5,sweepflag,immuneFraction);
+      immuneFraction = immuneFraction + 0.01;
+      printf("%d/100\n",current );
       current++;
     }
-    p1 = p1 + increment;
-    FILE *f = fopen("newFraction.txt", "a+");
-    fprintf(f,"\n");
-    fclose(f);
-
-    FILE *v = fopen("newVariance.txt", "a+");
-    fprintf(v,"\n");
-    fclose(v);
   }
-
 
   return 0;
 }
 
 
 
-float sirs(float p1, float p3, int sweeps){
+float sirs(float p1, float p3, int sweeps, float immuneFraction){
 
   int iterations, dimensions, equilibration, sampleStep, i, j, check, count, test, count2;
   float p2,fract, fractAvrg, squareFractAverage, variance;
@@ -106,6 +119,10 @@ float sirs(float p1, float p3, int sweeps){
   count2 = 0;
   fractAvrg = 0;
   squareFractAverage =0;
+
+  int immune = 0;
+  int maxImmune = dimensions*dimensions*immuneFraction;
+  float immuneProb;
 
   float infectedFraction[(iterations-equilibration)/sampleStep];
   int state[50][50] = {{0}};
@@ -126,6 +143,21 @@ float sirs(float p1, float p3, int sweeps){
       }
     }
   }
+  if(immuneFraction!=0){
+    while(immune<maxImmune){
+      for( i=0; i<dimensions ; i++){
+        for( j=0; j<dimensions ; j++){
+          float r2 = (rand()%1000);
+          r2 = r2/1000;
+          if(r2<=0.1){
+            state[i][j] = -2;
+            immune++;
+          }
+        }
+      }
+    }
+  }
+
   for( i=0 ; i<iterations ; i++){
     for( j=0 ; j<50*50 ; j++){
       float r = (rand()%1000);

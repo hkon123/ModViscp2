@@ -307,7 +307,7 @@ class Multiple(object):
 
 class ReadFromFile(object):
 
-    def __init__(self):
+    def Cmap(self):
         filename = raw_input("text file: ")
         new = []
         with open(filename, 'r') as f:
@@ -323,17 +323,43 @@ class ReadFromFile(object):
         plt.savefig('50by50fraction(10000sweeps).png')
         plt.show()
 
+    def Graph(self):
+        filename = raw_input("Plot file: ")
+        new = []
+        with open(filename, 'r') as f:
+            for line in f:
+                test = line.split(' ')
+                new.append(test)
+        #del(new[0,-1])
+        infecFrac = np.array(new)
+        infecFrac = np.delete(infecFrac,-1)
+        infecFrac = infecFrac.astype(float)
+        filename = raw_input("Error file: ")
+        new = []
+        with open(filename, 'r') as f:
+            for line in f:
+                test = line.split(' ')
+                new.append(test)
+        #del(new[0,-1])
+        variance = np.array(new)
+        variance = np.delete(variance,-1)
+        variance = variance.astype(float)
+        x = np.arange(0,1,0.01)
+        plt.plot(x,infecFrac)
+        plt.errorbar(x, infecFrac, yerr = variance)
+        #plt.savefig("plot.png")
+        plt.show()
 
 #A = GameOfLife()
 
-A = SIRS(50, 0.5,0.5,0.5, 100,10,10000, immuneFraction =0.25)
-print(A.immune)
+#A = SIRS(50, 0.5,0.5,0.5, 100,10,10000, immuneFraction =0.25)
+#print(A.immune)
 #A.run()
-A.updateNoAnim()
+#A.updateNoAnim()
 #A.plotInfFrac()
 
 #A = Multiple(100,10,500)
 #A.runM()
 #A.getPlot()
 
-#A=ReadFromFile()
+A=ReadFromFile().Graph()
