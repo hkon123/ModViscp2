@@ -146,10 +146,16 @@ float sirs(float p1, float p3, int sweeps, float immuneFraction){
   if(immuneFraction!=0){
     while(immune<maxImmune){
       for( i=0; i<dimensions ; i++){
+        if(immune == maxImmune){
+          break;
+        }
         for( j=0; j<dimensions ; j++){
+          if(immune == maxImmune){
+            break;
+          }
           float r2 = (rand()%1000);
           r2 = r2/1000;
-          if(r2<=0.1){
+          if(r2<=0.01 && state[i][j]!= -2){
             state[i][j] = -2;
             immune++;
           }
